@@ -1,8 +1,8 @@
 # BCHOC: Blockchain Chain of Custody
 
 ## Group Information
-**Group Name:** [Insert Group Name]  
-**Members:** [Insert Member Names and ASU IDs]  
+**Group Name:** Group #11  
+**Members:** Pratham Hegde, Kara Melvin, Raj Sarode, Ben Kim, Justin Guerro 
 
 ---
 
