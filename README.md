@@ -72,4 +72,3 @@ All data is stored in **binary format**. Timestamps are in UTC.
 - **Python:** Version 3.7+ recommended  
 - **Dependencies:** Listed in `packages` file if not default  
 
-Environment variables:
