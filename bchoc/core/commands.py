@@ -73,8 +73,8 @@ def add_handler(case_id: str, item_ids: List[int], creator: str, password: str) 
                 raise BchocError(ExitCode.ERROR, "Invalid Item ID")
             
             case_uuid = UUID(case_id)
-            encrypted_case_id = cryptography.encrypt_id(case_uuid.bytes.ljust(32, b'\x00'))
-            item_id_bytes = item_id.to_bytes(4, 'big').ljust(32, b'\x00')
+            encrypted_case_id = cryptography.encrypt_id(case_uuid.bytes)
+            item_id_bytes = item_id.to_bytes(4, 'big')
             encrypted_item_id = cryptography.encrypt_id(item_id_bytes)
             prev_block_bytes = get_last_block_bytes()
             if prev_block_bytes is None:
@@ -118,7 +118,7 @@ def checkout_handler(item_id: int, password: str) -> int:
             raise BchocError(ExitCode.ERROR, "Item cannot be checked out in its current state.")
         
         encrypted_case_id = get_item_case_id(item_id)
-        item_id_bytes = item_id.to_bytes(4, 'big').ljust(32, b'\x00')
+        item_id_bytes = item_id.to_bytes(4, 'big')
         encrypted_item_id = cryptography.encrypt_id(item_id_bytes)
 
         last_block_bytes = get_last_block_bytes()
@@ -165,7 +165,7 @@ def checkin_handler(item_id: int, password: str) -> int:
             raise BchocError(ExitCode.ERROR, "Item cannot be checked out in its current state.")
         
         encrypted_case_id = get_item_case_id(item_id)
-        item_id_bytes = item_id.to_bytes(4, 'big').ljust(32, b'\x00')
+        item_id_bytes = item_id.to_bytes(4, 'big')
         encrypted_item_id = cryptography.encrypt_id(item_id_bytes)
 
         last_block_bytes = get_last_block_bytes()
@@ -249,7 +249,7 @@ def remove_handler(item_id: int, reason:str, owner: Optional[str], password: str
             raise BchocError(ExitCode.ERROR, "Cannot remove item in its current state.")
         
         encrypted_case_id = get_item_case_id(item_id)
-        item_id_bytes = item_id.to_bytes(4, 'big').ljust(32, b'\x00')
+        item_id_bytes = item_id.to_bytes(4, 'big')
         encrypted_item_id = cryptography.encrypt_id(item_id_bytes)
 
         last_block_bytes = get_last_block_bytes()
