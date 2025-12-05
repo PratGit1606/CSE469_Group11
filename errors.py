@@ -1,9 +1,7 @@
-
-# Shared exit codes and error type.
-
 class ExitCode:
     # Standard exit codes for the bchoc program.
     OK = 0          # success
+    E_GENERAL = 1    # general error
     E_ARGS = 2      # invalid arguments
     E_AUTH = 3      # authentication / authorization failure
     E_STATE = 4     # invalid blockchain state / operation
@@ -21,4 +19,3 @@ class BchocError(Exception):
     def __str__(self) -> str:
         # Return a readable representation of the error.
         return f"[{self.code}] {self.msg}"
-print("This is the utils/errors.py file")

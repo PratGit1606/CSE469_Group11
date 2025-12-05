@@ -19,7 +19,7 @@ def utc_now_iso() -> str:
 def format_timestamp(ts: float) -> str:
     # Format a UTC timestamp as an ISO-8601 string with 'Z'.
     return datetime.fromtimestamp(ts, tz=timezone.utc).isoformat(
-        timespec="seconds"
+        timespec="microseconds"
     ).replace("+00:00", "Z")
 
 
@@ -47,20 +47,28 @@ def format_show_items(items: List[Dict], case_id: Optional[str], reveal: bool) -
 
 
 def format_history(entries: List[Dict], reveal: bool) -> str:
-    # Format history entries into the text shown by 'show history'.
+    if not entries:
+        return ""
+    
     lines: List[str] = []
-    for entry in entries:
+    for i, entry in enumerate(entries):
         ts = entry.get("timestamp_iso") or format_timestamp(entry.get("timestamp", 0.0))
         case_id = entry.get("case_id", "")
         item_id = entry.get("item_id", "")
         state = entry.get("state", "")
         creator = entry.get("creator", "")
-        lines.append(f"{ts}  case={case_id}  item={item_id}  {state} by {creator}")
+        
+        lines.append(f"Case: {case_id}")
+        lines.append(f"Item: {item_id}")
+        lines.append(f"Action: {state}")
+        lines.append(f"Time: {ts}")
+        
+        if i < len(entries) - 1:
+            lines.append("")
+    
     return "\n".join(lines)
 
-
 def format_verify(result: Dict) -> str:
-    # Format verify_chain() result dictionary into the CLI output text.
     lines: List[str] = []
 
     count = result.get("count", 0)
@@ -96,6 +104,8 @@ def format_verify(result: Dict) -> str:
         lines.append("> Item was removed more than once.")
     elif error_kind == "DUPLICATE_ITEM":
         lines.append("> Duplicate item state detected in blockchain.")
+    elif error_kind == "REMOVE_BEFORE_ADD":
+        lines.append("> Item was removed before being added to chain.")
     elif error_kind == "EXCEPTION":
         exc = result.get("exception", "Unknown error")
         lines.append(f"> Internal error during verify: {exc}")

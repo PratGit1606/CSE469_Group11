@@ -1,8 +1,9 @@
+#Done by Raj Sarode
 import os
 from typing import BinaryIO, Iterator, Tuple
 
-from bchoc.utils.errors import BchocError, ExitCode
-from bchoc.utils.block import HEADER_SIZE, Block
+from errors import BchocError, ExitCode
+from block import HEADER_SIZE, Block
 
 
 def resolve_path() -> str:

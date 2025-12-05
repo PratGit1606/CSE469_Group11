@@ -39,9 +39,8 @@ class Block:
     data_length: int       # 4 bytes 
     data: bytes            
 
-    # checks if this is the genesis block
     def is_genesis(self) -> bool:
-        return self.prev_hash == ZERO32 and self.timestamp == 0.0
+        return self.prev_hash == ZERO32
     
     # pack the fixed-sized header with validated fields
     def pack_header(self) -> bytes:

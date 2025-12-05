@@ -1,13 +1,8 @@
-from bchoc.utils.block import Block, ZERO32
+from block import Block, ZERO32
 from typing import List, Iterator, Optional
-import bchoc.persistence.persistence as persistence
-import bchoc.crypto.cryptography as cryptography
-
-
-# --- PUBLIC API ----- #
-
-# add a fully packed block to the chain file
-# (assumes that Core already set prev_hash)
+import persistence as persistence
+import cryptography as cryptography
+from errors import BchocError
 def add_block(block_bytes: bytes) -> bool:
     try:
         path = persistence.resolve_path()
@@ -17,8 +12,7 @@ def add_block(block_bytes: bytes) -> bool:
     except Exception:
         return False
 
-# reads the whole block file and checks that each hash == prev_hash
-def verify_chain()-> dict:
+def verify_chain() -> dict:
     result = {
         "count": 0,
         "state": "CLEAN",
@@ -38,7 +32,6 @@ def verify_chain()-> dict:
             result["error_kind"] = "NO_BLOCKS"
             return result
         
-
         first_block = Block.unpack_block(blocks[0])
         if not first_block.is_genesis():
             result["state"] = "ERROR"
@@ -109,6 +102,14 @@ def verify_chain()-> dict:
                         result["error_kind"] = "ACTION_AFTER_REMOVAL"
                         result["bad_block_index"] = i
                         return result
+            
+            # Check for remove before add - if item is being removed but wasn't added
+            if state in ['DISPOSED', 'DESTROYED', 'RELEASED']:
+                if item_id not in item_states:
+                    result["state"] = "ERROR"
+                    result["error_kind"] = "REMOVE_BEFORE_ADD"
+                    result["bad_block_index"] = i
+                    return result
                     
             # check for double checkout
             if item_id in item_states:
@@ -131,6 +132,10 @@ def verify_chain()-> dict:
                     
             item_states[item_id] = (state, i)
 
+    except BchocError as e:
+        result["state"] = "ERROR"
+        result["error_kind"] = "EXCEPTION"
+        result["exception"] = str(e)
     except Exception as e:
         result["state"] = "ERROR"
         result["error_kind"] = "EXCEPTION"
@@ -171,26 +176,28 @@ def _iterate_raw_blocks() -> Iterator[bytes]:
 
 def _filter_blocks(case_id: bytes, item_id: bytes,
                    limit: int, reverse: bool) -> List[bytes]:
-    # decode each raw block with Block.unpack_block and apply filters
-    matching_blocks = []
+    matching = []
 
     for raw_block in _iterate_raw_blocks():
         block = Block.unpack_block(raw_block)
 
-        if case_id is not None and block.case_id != case_id:
-            continue
+        if case_id is not None:
+            if block.case_id != case_id:
+                continue
 
-        if item_id is not None and block.item_id != item_id:
-            continue
+        if item_id is not None:
+            if block.item_id != item_id:
+                continue
 
-        matching_blocks.append(raw_block)
+        matching.append(raw_block)
 
     if reverse:
-            matching_blocks.reverse()
-        
-    if limit is not None and limit > 0:
-            matching_blocks = matching_blocks[:limit]
+        matching.reverse()
 
-    return matching_blocks
+    if limit is not None and limit > 0:
+        matching = matching[:limit]
+
+    return matching
+
 
 
